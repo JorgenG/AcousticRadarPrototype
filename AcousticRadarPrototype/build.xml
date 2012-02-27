@@ -1,6 +1,6 @@
-<project name="org.lejos.example" default="uploadandrun">
+<project name="org.grondal.acousticradar.legounit" default="uploadandrun">
 	<description>
-    	org.lejos.example.HelloWorld build file
+    	org.grondal.acousticradar.legounit.NXTController build file
     </description>
 
 	<!-- set properties for this build -->
