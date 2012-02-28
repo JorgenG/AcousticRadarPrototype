@@ -23,20 +23,37 @@ public class Mapper extends Thread
     private UltrasonicSensor uSensor;
     private boolean isInterrupted;
     private int rotationTick;
-    private LCDMap lcdMap;
+    private LCDMap currentMap;
+    private LCDMap referenceMap;
+    
     
     public Mapper(LCDMap lcdMap) 
     {
         motor = Motor.A;
+        motor.setSpeed(60);
         currentPosition = 0;
         uSensor = new UltrasonicSensor(SensorPort.S4);
         isInterrupted = false;
         rotationTick = 10;
-        this.lcdMap = lcdMap;
+        this.currentMap = lcdMap;
+    }
+    
+    public void run()
+    {
+        while(true)
+        {
+            
+        }
+    }
+    
+    public LCDMap getCurrentMap()
+    {
+        return currentMap;
     }
     
     public void startMapping() 
-    {        
+    {
+        
         if(NXTController.CONTINUOUS_MODE == NXTController.getInstance().getOperatingMode())
         {
             while(!isInterrupted)
@@ -51,9 +68,13 @@ public class Mapper extends Thread
                 scanOnce();
             }
         }
-        else
+        else 
         {
-            // Idle or invalid mode
+            try {
+                this.wait();
+            } catch (InterruptedException ex) {
+
+            }
         }
         
     }  
@@ -70,7 +91,7 @@ public class Mapper extends Thread
             int distance = uSensor.getDistance();
             if(distance != 255)
             {
-                lcdMap.addMapObject(distance, currentPosition);
+                currentMap.addMapObject(distance, currentPosition);
             }            
             currentPosition += rotationTick;
             motor.rotate(rotationTick);
@@ -86,11 +107,34 @@ public class Mapper extends Thread
             int distance = uSensor.getDistance();
             if(distance != 255)
             {
-                lcdMap.addMapObject(distance, currentPosition);
+                currentMap.addMapObject(distance, currentPosition);
             }            
             currentPosition -= rotationTick;
             motor.rotate(-rotationTick);
         }
+    }
+    
+    public void createReferenceMap()
+    {
+        while(currentPosition < 360 && !isInterrupted)
+        {
+            try 
+            {
+                Thread.sleep(50);
+            }
+            catch(Exception e){ }
+            int distance = uSensor.getDistance();
+            if(distance != 255)
+            {
+                referenceMap.addMapObject(distance, currentPosition);
+            }            
+            currentPosition += rotationTick;
+            motor.rotate(rotationTick);
+        }
+        motor.setSpeed(180);
+        motor.rotate(-360);
+        motor.setSpeed(60);
+        currentPosition = 0;
     }
     
     public void soundDetected()

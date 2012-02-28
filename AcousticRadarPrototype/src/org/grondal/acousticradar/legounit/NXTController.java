@@ -52,13 +52,16 @@ public class NXTController {
         UltrasonicSensor uSensor = new UltrasonicSensor(SensorPort.S4);
 
         Sound.beepSequenceUp();
-
+        Alarm alarm = new Alarm();
+        alarm.start();
         int counter = 0;
         Motor.A.setSpeed(90);
+        Motor.A.rotate(180);
+        Motor.A.rotate(-180);
 
-        Alarm alarm = new Alarm();
+        
 
-
+/*
         for(int i = 0; i < 36; i++) 
         {
             Motor.A.rotate(10);
@@ -91,7 +94,7 @@ public class NXTController {
 
             }
 
-        }
+        }*/
 
 
         counter = 0;
