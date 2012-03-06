@@ -23,6 +23,7 @@ public class Alarm extends Thread {
         Sound.playNote(Sound.PIANO, 830, twoHundred);
         Sound.playNote(Sound.PIANO, 554, oneHundred);
         Sound.playNote(Sound.PIANO, 622, twoHundred);
+        
         Sound.playNote(Sound.PIANO, 493, oneHundred);
         Sound.playNote(Sound.PIANO, 587, oneHundred);
         Sound.playNote(Sound.PIANO, 554, oneHundred);
@@ -30,7 +31,7 @@ public class Alarm extends Thread {
         Sound.playNote(Sound.PIANO, 493, twoHundred);
         Sound.playNote(Sound.PIANO, 554, twoHundred);
         Sound.playNote(Sound.PIANO, 587, twoHundred);
-        
+        /*
         Sound.playNote(Sound.PIANO, 587, oneHundred);
         Sound.playNote(Sound.PIANO, 554, oneHundred);
         Sound.playNote(Sound.PIANO, 493, oneHundred);
@@ -149,7 +150,7 @@ public class Alarm extends Thread {
         Sound.playNote(Sound.PIANO, 369, oneHundred);
         Sound.playNote(Sound.PIANO, 493, twoHundred);
                 
-        
+        /*
         Sound.playNote(Sound.PIANO, 523, 238);
 Sound.playNote(Sound.PIANO, 261, 238);
 Sound.playNote(Sound.PIANO, 622, 238);
@@ -554,6 +555,8 @@ Sound.playNote(Sound.PIANO, 116, 119);
 Sound.playNote(Sound.PIANO, 174, 119);
 Sound.playNote(Sound.PIANO, 207, 119);
 Sound.playNote(Sound.PIANO, 233, 119);
+         * */
+         
     }
     
 }

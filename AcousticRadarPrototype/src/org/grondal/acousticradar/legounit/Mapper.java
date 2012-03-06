@@ -26,8 +26,10 @@ public class Mapper extends Thread
     private LCDMap currentMap;
     private LCDMap referenceMap;
     
+    private IntruderDetector intruderDetector;
     
-    public Mapper(LCDMap lcdMap) 
+    
+    public Mapper() 
     {
         motor = Motor.A;
         motor.setSpeed(60);
@@ -35,52 +37,60 @@ public class Mapper extends Thread
         uSensor = new UltrasonicSensor(SensorPort.S4);
         isInterrupted = false;
         rotationTick = 10;
-        this.currentMap = lcdMap;
+        intruderDetector = new IntruderDetector();
     }
     
+    @Override
     public void run()
     {
+        createReferenceMap();
+        NXTController.getInstance().sendMapObjects(referenceMap, 120);
         while(true)
         {
-            
+            try 
+            {
+                synchronized(this)
+                {
+                    startMapping();
+                    this.wait();
+                      
+                }                
+            } 
+            catch (InterruptedException ex) 
+            {
+                
+            } 
+            isInterrupted = false;
         }
     }
     
-    public LCDMap getCurrentMap()
-    {
-        return currentMap;
-    }
-    
-    public void startMapping() 
+    public void startMapping () throws InterruptedException
     {
         
         if(NXTController.CONTINUOUS_MODE == NXTController.getInstance().getOperatingMode())
         {
             while(!isInterrupted)
             {
-                scanOnce();
+                scanOnce();                
             }
         } 
         else if(NXTController.SOUND_ACTIVATED_MODE == NXTController.getInstance().getOperatingMode())
         {
-            for(int i = 0; i < 3 && !isInterrupted; i++)
-            {
-                scanOnce();
-            }
+            this.wait();
+            scanOnce();
         }
-        else 
-        {
-            try {
-                this.wait();
-            } catch (InterruptedException ex) {
-
-            }
-        }
+             
         
     }  
     
+    public synchronized void modeChanged()
+    {
+        this.notify();
+    }
+    
     public void scanOnce()
     {
+        currentMap = new LCDMap();
         while(currentPosition < 360 && !isInterrupted)
         {
             try 
@@ -89,33 +99,30 @@ public class Mapper extends Thread
             }
             catch(Exception e){ }
             int distance = uSensor.getDistance();
-            if(distance != 255)
-            {
                 currentMap.addMapObject(distance, currentPosition);
-            }            
+            
             currentPosition += rotationTick;
             motor.rotate(rotationTick);
         }
-        
-        while(currentPosition > 0 && !isInterrupted)
-        {
-            try 
-            {
-                Thread.sleep(50);
-            }
-            catch(Exception e){ }
-            int distance = uSensor.getDistance();
-            if(distance != 255)
-            {
-                currentMap.addMapObject(distance, currentPosition);
-            }            
-            currentPosition -= rotationTick;
-            motor.rotate(-rotationTick);
+        if(!isInterrupted) {
+            intruderDetector.checkForIntruders(currentMap);
+            ScreenRenderer.drawMapObjects(currentMap);
+            NXTController.getInstance().sendMapObjects(currentMap, 121);
         }
+            
+       
+        
+        
+        motor.setSpeed(180);
+        motor.rotate(-currentPosition);
+        motor.setSpeed(60);
+        currentPosition = 0;
+               
     }
     
     public void createReferenceMap()
     {
+        referenceMap = new LCDMap();
         while(currentPosition < 360 && !isInterrupted)
         {
             try 
@@ -124,22 +131,28 @@ public class Mapper extends Thread
             }
             catch(Exception e){ }
             int distance = uSensor.getDistance();
-            if(distance != 255)
-            {
-                referenceMap.addMapObject(distance, currentPosition);
-            }            
+            referenceMap.addMapObject(distance, currentPosition);
+            
             currentPosition += rotationTick;
             motor.rotate(rotationTick);
         }
+        
+        if(!isInterrupted)
+        {
+            intruderDetector.setReferenceMap(referenceMap);
+            ScreenRenderer.drawMapObjects(referenceMap);
+        } 
         motor.setSpeed(180);
-        motor.rotate(-360);
+        motor.rotate(-currentPosition);
         motor.setSpeed(60);
         currentPosition = 0;
+        
+                   
     }
     
-    public void soundDetected()
+    public synchronized void soundDetected()
     {
-        
+        this.notify();
     }
     
     public void stopMapping()

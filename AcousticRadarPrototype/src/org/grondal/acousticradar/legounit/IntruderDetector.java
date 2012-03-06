@@ -10,4 +10,28 @@ package org.grondal.acousticradar.legounit;
  */
 public class IntruderDetector {
     
+    public LCDMap referenceMap;
+    
+    public IntruderDetector()
+    {
+        
+    }
+    
+    public void setReferenceMap(LCDMap referenceMap)
+    {
+        this.referenceMap = referenceMap;
+    }
+    
+    public void checkForIntruders(LCDMap measuredMap)
+    {
+        if(referenceMap.getMapObjects().equals(measuredMap.getMapObjects()))
+        {
+            // Nothing detected
+        }
+        else
+        {            
+            NXTController.getInstance().raiseAlarm();
+        }
+    }
+    
 }

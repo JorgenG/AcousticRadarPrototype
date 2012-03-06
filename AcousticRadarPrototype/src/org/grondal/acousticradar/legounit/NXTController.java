@@ -1,6 +1,7 @@
 package org.grondal.acousticradar.legounit;
 
 import lejos.nxt.*;
+import org.grondal.acousticradar.legounit.communication.CommunicationInterface;
 
 /**
  * NXTController is the entry point for the application and will set
@@ -14,7 +15,11 @@ public class NXTController {
     public static final int SOUND_ACTIVATED_MODE = 101;
     public static final int IDLE_MODE = 102;
     
+    private Alarm alarm;
     private int operatingMode; 
+    private CommunicationInterface commInterface;
+    private Mapper mapper;
+    private SoundListener sndListener;
     
     private static NXTController instance;
     
@@ -22,11 +27,34 @@ public class NXTController {
     public NXTController()
     {
         operatingMode = 102;
+        alarm = new Alarm();
+        commInterface = new CommunicationInterface();
+        mapper = new Mapper();
+        sndListener = new SoundListener(mapper);
     }
     
-    public void setOperatingMode(int newOperatingMode)
+    public void initNxt()
     {
-        operatingMode = newOperatingMode;
+        mapper.start();
+        sndListener.start();
+    }
+    
+    public synchronized void setOperatingMode(int newOperatingMode)
+    {
+        if(newOperatingMode != operatingMode)
+        {
+            mapper.stopMapping();
+            operatingMode = newOperatingMode;
+            mapper.modeChanged();
+            if(operatingMode == SOUND_ACTIVATED_MODE)
+            {
+                sndListener.startSoundListener();
+            }
+            else
+            {
+                sndListener.deactivateSoundListener();
+            }
+        }            
     }
     
     public int getOperatingMode()             
@@ -43,11 +71,32 @@ public class NXTController {
         return instance;
     }
     
+    public void raiseAlarm()
+    {
+        if(alarm.isAlive())
+        {
+            // Do nothing.
+        } 
+        else
+        {
+            alarm = new Alarm();
+            alarm.start();
+        }
+        
+    }
+    
+    public void sendMapObjects(LCDMap map, int mapType)
+    {
+        commInterface.sendMapData(map, mapType);
+    }
 
     
     
     public static void main(String[] args) 
     {
+        NXTController controller = NXTController.getInstance();
+        
+        /*
         System.out.println("Hello World");
         UltrasonicSensor uSensor = new UltrasonicSensor(SensorPort.S4);
 
@@ -60,7 +109,7 @@ public class NXTController {
         Motor.A.rotate(-180);
 
         
-
+*/
 /*
         for(int i = 0; i < 36; i++) 
         {
@@ -96,9 +145,10 @@ public class NXTController {
 
         }*/
 
-
-        counter = 0;
+/*
         Button.waitForPress(10000);
+ * */
+ 
 
     }
 }

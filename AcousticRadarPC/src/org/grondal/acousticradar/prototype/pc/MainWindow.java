@@ -20,6 +20,7 @@ public class MainWindow extends javax.swing.JFrame
 {
     
     private CommunicationInterface communicationInterface;
+    private static MainWindow instance;
 
     /** Creates new form MainWindow */
     public MainWindow() 
@@ -29,6 +30,37 @@ public class MainWindow extends javax.swing.JFrame
         modeButtonGroup.add(idleSelector);
         modeButtonGroup.add(soundModeSelector);
         modeButtonGroup.add(contModeSelector);
+    }
+    
+    public static MainWindow getInstance()
+    {
+        return instance;
+    }
+    
+    public void setStatusBarText(String newInfo)
+    {
+        statusBarLabel.setText("NXT Status: " + newInfo);
+    }
+    
+    public MapPanel getMapPanel()
+    {
+        return mapPanel;
+    }
+    
+    public void modeSelect(int mode)
+    {
+        switch(mode)
+        {
+            case CommunicationInterface.CMD_CHANGETOCONTMODE:
+                modeButtonGroup.setSelected(contModeSelector.getModel(), true);
+                break;
+            case CommunicationInterface.CMD_CHANGETOIDLEMODE:
+                modeButtonGroup.setSelected(idleSelector.getModel(), true);
+                break;
+            case CommunicationInterface.CMD_CHANGETOSOUNDMODE:
+                modeButtonGroup.setSelected(soundModeSelector.getModel(), true);
+                break;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -41,38 +73,51 @@ public class MainWindow extends javax.swing.JFrame
     private void initComponents() {
 
         modeButtonGroup = new javax.swing.ButtonGroup();
+        jPanel2 = new javax.swing.JPanel();
         bottomSeparator = new javax.swing.JSeparator();
         statusBarLabel = new javax.swing.JLabel();
-        mapPanel1 = new org.grondal.acousticradar.prototype.pc.MapPanel();
+        mapPanel = new org.grondal.acousticradar.prototype.pc.MapPanel();
         jPanel1 = new javax.swing.JPanel();
-        idleSelector = new javax.swing.JRadioButton();
-        soundModeSelector = new javax.swing.JRadioButton();
         contModeSelector = new javax.swing.JRadioButton();
+        soundModeSelector = new javax.swing.JRadioButton();
+        idleSelector = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(0, 0, 0));
 
-        statusBarLabel.setText("NXT Status: Idle");
+        jPanel2.setBackground(new java.awt.Color(51, 51, 51));
 
-        javax.swing.GroupLayout mapPanel1Layout = new javax.swing.GroupLayout(mapPanel1);
-        mapPanel1.setLayout(mapPanel1Layout);
-        mapPanel1Layout.setHorizontalGroup(
-            mapPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        statusBarLabel.setForeground(new java.awt.Color(255, 255, 255));
+        statusBarLabel.setText("NXT Status: Not connected");
+
+        mapPanel.setBackground(new java.awt.Color(51, 51, 51));
+
+        javax.swing.GroupLayout mapPanelLayout = new javax.swing.GroupLayout(mapPanel);
+        mapPanel.setLayout(mapPanelLayout);
+        mapPanelLayout.setHorizontalGroup(
+            mapPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 220, Short.MAX_VALUE)
         );
-        mapPanel1Layout.setVerticalGroup(
-            mapPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        mapPanelLayout.setVerticalGroup(
+            mapPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 220, Short.MAX_VALUE)
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Modes"));
+        jPanel1.setBackground(new java.awt.Color(51, 51, 51));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Modes", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(255, 255, 255))); // NOI18N
+        jPanel1.setForeground(new java.awt.Color(255, 255, 255));
 
-        idleSelector.setText("Idle / Stop");
-        idleSelector.addActionListener(new java.awt.event.ActionListener() {
+        contModeSelector.setBackground(new java.awt.Color(51, 51, 51));
+        contModeSelector.setForeground(new java.awt.Color(255, 255, 255));
+        contModeSelector.setText("Continous mode");
+        contModeSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                idleSelectorActionPerformed(evt);
+                contModeSelectorActionPerformed(evt);
             }
         });
 
+        soundModeSelector.setBackground(new java.awt.Color(51, 51, 51));
+        soundModeSelector.setForeground(new java.awt.Color(255, 255, 255));
         soundModeSelector.setText("Sound activated mode");
         soundModeSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -80,10 +125,12 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        contModeSelector.setText("Continous mode");
-        contModeSelector.addActionListener(new java.awt.event.ActionListener() {
+        idleSelector.setBackground(new java.awt.Color(51, 51, 51));
+        idleSelector.setForeground(new java.awt.Color(255, 255, 255));
+        idleSelector.setText("Idle / Stop");
+        idleSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                contModeSelectorActionPerformed(evt);
+                idleSelectorActionPerformed(evt);
             }
         });
 
@@ -94,53 +141,60 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(idleSelector)
-                            .addComponent(soundModeSelector))
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(contModeSelector, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(36, 36, 36))))
+                    .addComponent(contModeSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(soundModeSelector)
+                    .addComponent(idleSelector))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(contModeSelector)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(soundModeSelector)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(idleSelector)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(bottomSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(mapPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(statusBarLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(mapPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(bottomSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusBarLabel)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(bottomSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(mapPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(statusBarLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(mapPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bottomSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusBarLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -189,7 +243,8 @@ public class MainWindow extends javax.swing.JFrame
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new MainWindow().setVisible(true);
+                instance = new MainWindow();
+                instance.setVisible(true);
             }
         });
     }
@@ -198,7 +253,8 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JRadioButton contModeSelector;
     private javax.swing.JRadioButton idleSelector;
     private javax.swing.JPanel jPanel1;
-    private org.grondal.acousticradar.prototype.pc.MapPanel mapPanel1;
+    private javax.swing.JPanel jPanel2;
+    private org.grondal.acousticradar.prototype.pc.MapPanel mapPanel;
     private javax.swing.ButtonGroup modeButtonGroup;
     private javax.swing.JRadioButton soundModeSelector;
     private javax.swing.JLabel statusBarLabel;
